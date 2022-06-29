@@ -34,26 +34,64 @@ def generatekey():
 
 # -------------------------------------------------------------------------------------------------------------------- #
 
+
+
+
+filepathls = list()
+
 while True:
     userchoice = input("Mode: [E] Encryption\t[D] Decryption: ").capitalize()
     if userchoice in ["E", "D"]:
         break
     else:
         print("Invalid choice, try again.\n")
-
 while True:
-    filepath = input("\nFile path: ")
-    if os.path.isfile(filepath):
+    fileselchoice = input("File selection: [1] One file [2] Multiple files [3] Folder selection: ")
+    if fileselchoice in ["1","2","3"]:
         break
     else:
-        print("Path does not exist, try again.\n")
+        print("Invalid choice, try again.\n")
 
-if userchoice == "E":
-    if filepath.endswith(".enc"):
-        print("File has the .enc extension already, aborting process to avoid irreversible actions.")
-        quit()
+if fileselchoice == "1":
+    while True:
+        filepath = input("\nFile path: ")
+        if os.path.isfile(filepath):
+            filepathls.append(filepath)
+            break
+        else:
+            print("Path does not exist, try again.\n")
+elif fileselchoice == "2" or fileselchoice == "3":
+    if userchoice == "D":
+        keyu = input("Key: ").encode()
     else:
         pass
+    if fileselchoice == "2":
+        while True:
+            filepath = input("\nFile path [type done when done]: ")
+            if os.path.isfile(filepath):
+                filepathls.append(filepath)
+            elif filepath.lower() == "done":
+                break
+            else:
+                print("Path does not exist, try again.\n")
+    else:
+        while True:
+            folderpath = input("\nFolder path: ")
+            if os.path.isdir(folderpath):
+                for fif in os.listdir(folderpath):
+                    if os.path.isfile(folderpath + "\\" + fif):
+                        filepathls.append(folderpath + "\\" + fif)
+                break
+            else:
+                print("Path does not exist, try again.\n")
+
+if userchoice == "E":
+    for f in filepathls:
+        if f.endswith(".enc"):
+            print("File has the .enc extension already, aborting process to avoid irreversible actions.")
+            quit()
+        else:
+            pass
     while True:
         keychoice = input("Key: [R] Random\t[M] Manual: ").capitalize()
         if keychoice in ["R", "M"]:
@@ -69,31 +107,37 @@ if userchoice == "E":
                 break
             else:
                 print("Key too short or long, try again.")
-    with open(filepath, "rb+") as file:
-        print("\nEncrypting file...")
-        content = file.read()
-        file.seek(0)
-        econtent = encrypttext(key, content)
-        file.write(econtent)
-        file.truncate()
-        file.close()
-        os.rename(filepath, filepath + ".enc")
-        print("Encryption complete!\n")
-        print("Key: " + key.decode())
-else: # elif userchoice == "D"
-    if not filepath.endswith(".enc"):
-        print("File does not end with the .enc file extension.")
-        quit()
-    else:
-        pass
-    keyu = input("Key: ").encode()
-    with open(filepath, "rb+") as file:
-        print("\nDecrypting file...")
-        content = file.read()
-        file.seek(0)
-        dcontent = decrypttext(keyu, content)
-        file.write(dcontent)
-        file.truncate()
-        file.close()
-        os.rename(filepath, filepath[:-4])
-        print("Decryption complete!\n")
+    for f in filepathls:
+        with open(f, "rb+") as file:
+            print("\nEncrypting {}".format(f))
+            content = file.read()
+            file.seek(0)
+            econtent = encrypttext(key, content)
+            file.write(econtent)
+            file.truncate()
+            file.close()
+            os.rename(f, f + ".enc")
+            print("Encryption complete!")
+            print("\nKey: " + key.decode())
+
+else:
+    for f in filepathls:
+        if not f.endswith(".enc"):
+            print("File does not end with the .enc file extension.")
+            quit()
+        else:
+            pass
+        if fileselchoice == "1":
+            keyu = input("Key: ").encode()
+        else:
+            pass
+        with open(f, "rb+") as file:
+            print("\nDecrypting {}".format(f))
+            content = file.read()
+            file.seek(0)
+            dcontent = decrypttext(keyu, content)
+            file.write(dcontent)
+            file.truncate()
+            file.close()
+            os.rename(f, f[:-4])
+            print("Decryption complete!")
